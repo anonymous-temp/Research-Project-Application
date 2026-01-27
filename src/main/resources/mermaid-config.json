@@ -1,0 +1,27 @@
+{
+  "theme": "default",
+  "themeVariables": {
+    "fontSize": "18px",
+    "fontFamily": "Arial, sans-serif"
+  },
+  "flowchart": {
+    "htmlLabels": true,
+    "curve": "basis",
+    "padding": 20,
+    "nodeSpacing": 80,
+    "rankSpacing": 80,
+    "diagramPadding": 20,
+    "useMaxWidth": true
+  },
+  "gantt": {
+    "fontSize": 16,
+    "fontFamily": "Arial, sans-serif"
+  },
+  "sequence": {
+    "fontSize": 16,
+    "fontFamily": "Arial, sans-serif"
+  }
+}
+
+
+
