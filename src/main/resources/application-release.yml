@@ -13,16 +13,16 @@ spring:
 
 
   elasticsearch:
-    uris: http://es-cn-8t84ft4ee0003tib9.public.elasticsearch.aliyuncs.com:9200
-    username: elastic
-    password: Lxyl123456
+    uris: ${ES_URIS:http://localhost:9200}
+    username: ${ES_USERNAME:elastic}
+    password: ${ES_PASSWORD:changeme}
 
   ai:
     dashscope:
-      api-key: sk-b658b36ac2c441bd8a2d615167cbcc4f  # 替换为真实的 API Key
+      api-key: ${DASHSCOPE_API_KEY:your-api-key}
       # 多API Key配置（可选，用逗号分隔多个key，用于故障转移和负载均衡）
       # api-keys: sk-key1,sk-key2,sk-key3  # 当主key失败时自动切换到备用key
-      api-keys: sk-b658b36ac2c441bd8a2d615167cbcc4f,sk-e562d28a63354f91803d18cbad60b7a4,sk-b11e5809027747a5aee24de3b392e1d9,sk-ffd2d0d74ba64e0d8e5258004dad3751
+      api-keys: ${DASHSCOPE_API_KEYS:}
       connect-timeout: 30000     # 连接超时：30秒（增加到30秒，提高稳定性）
       read-timeout: 60000       # 读取超时：60秒（增加到60秒）
       write-timeout: 30000       # 写入超时：30秒（增加到30秒）
@@ -68,7 +68,7 @@ spring:
   # mongodb的连接
   data:
     mongodb:
-      uri: mongodb://RWuser1:lxlz-masterRW@172.16.0.84:27017/evimed_new
+      uri: ${MONGODB_URI:mongodb://localhost:27017/evimed_new}
       # 超时配置
       socket-timeout: 6000      # Socket读取超时时间，6秒
       connection-timeout: 30000  # 连接超时时间，3秒
@@ -77,11 +77,11 @@ spring:
 
     #Rides集群
     redis:
-      host: r-2zerq5mckple6w1963pd.redis.rds.aliyuncs.com
-      port: 6379
-      database: 2
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:2}
       timeout: 100000
-      password: Lxyl123456
+      password: ${REDIS_PASSWORD:}
       lettuce:
         shutdown-timeout: 2000ms
     #    #Rides单体
@@ -227,10 +227,9 @@ logging:
 
 # searchAPI
 search-api:
-  # 需要替换为你自己的 key
-  api-key: EwR3t4k9DFwfxNoLGuQW4E2q
+  api-key: ${SEARCH_API_KEY:your-search-api-key}
   bo-cha:
-    key: sk-b6d5a986dd2348dcac093b5f52ed2c67
+    key: ${BOCHA_API_KEY:your-bocha-key}
 
 # Aliyun OSS Configuration
 # SECURITY: Use environment variables for credentials

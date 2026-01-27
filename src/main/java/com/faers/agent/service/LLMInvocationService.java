@@ -28,17 +28,40 @@ public class LLMInvocationService {
 
     private static final Logger log = LoggerFactory.getLogger(LLMInvocationService.class);
     
-    // API Key配置
-    private static final List<String> API_KEYS = Arrays.asList(
-            "sk-b658b36ac2c441bd8a2d615167cbcc4f", // 高贵
-            "sk-e562d28a63354f91803d18cbad60b7a4", // 海峰
-            "sk-b11e5809027747a5aee24de3b392e1d9", // 凯利
-            "sk-29ce01e81b564bac88c142b9dcdfa2f1", // 倩文
-            "sk-ffd2d0d74ba64e0d8e5258004dad3751", // 昱晗
-            "sk-63e9a243bcc54e4ead40e0484871238f", // 孙静
-            "sk-1f1774b3cf4e4af495cd845f157dbe89", // 冯帅
-            "sk-1ff5c54858d9436cb0963c4ac36d4e29"  // 翠姐
-    );
+    // API Key配置 - 从环境变量加载
+    private static final List<String> API_KEYS = loadApiKeysFromEnv();
+
+    /**
+     * 从环境变量加载API密钥
+     * 支持 LLM_API_KEY_1 到 LLM_API_KEY_10 或单个 DASHSCOPE_API_KEY
+     */
+    private static List<String> loadApiKeysFromEnv() {
+        List<String> keys = new ArrayList<>();
+
+        // 尝试加载多个API Key (LLM_API_KEY_1 到 LLM_API_KEY_10)
+        for (int i = 1; i <= 10; i++) {
+            String key = System.getenv("LLM_API_KEY_" + i);
+            if (key != null && !key.isEmpty() && !key.startsWith("${")) {
+                keys.add(key);
+            }
+        }
+
+        // 如果没有找到多个Key，尝试加载单个DASHSCOPE_API_KEY
+        if (keys.isEmpty()) {
+            String singleKey = System.getenv("DASHSCOPE_API_KEY");
+            if (singleKey != null && !singleKey.isEmpty() && !singleKey.startsWith("${")) {
+                keys.add(singleKey);
+            }
+        }
+
+        // 如果仍然没有Key，记录警告
+        if (keys.isEmpty()) {
+            LoggerFactory.getLogger(LLMInvocationService.class)
+                .warn("未配置API Key，请设置环境变量 LLM_API_KEY_1-10 或 DASHSCOPE_API_KEY");
+        }
+
+        return keys;
+    }
     
     // API Key状态管理
     private static final class ApiKeyStatus {
