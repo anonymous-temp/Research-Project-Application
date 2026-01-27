@@ -1,0 +1,89 @@
+server:
+  port: 2035
+
+spring:
+  application:
+    name: faers-analysis-system
+  servlet:
+    multipart:
+      max-request-size: 100MB
+      max-file-size: 100MB
+
+  ai:
+    dashscope:
+      api-key: YOUR_DASHSCOPE_API_KEY
+      # 增加连接和读取超时配置
+      connect-timeout: 30000
+      read-timeout: 120000
+      # 增加重试配置
+      max-retries: 3
+      # 指定模型名称
+      chat:
+        options:
+          model: qwen-plus
+
+  cloud:
+    inetutils:
+      ignoredInterfaces:
+        - VMware.* # 忽略虚拟机网卡
+      use-only-site-local-interfaces: true
+      preferred-networks: 192.168.0.*
+
+  # mongodb的连接
+  data:
+    mongodb:
+      database: evimed_test
+      host: 192.168.14.195
+      port: 27017
+      username: RWuser1
+      password: ndyxrwserver1
+
+    redis:
+      host: 192.168.10.167
+      port: 6379
+      database: 1
+      timeout: 2000
+      password: ndyx@123
+
+  elasticsearch:
+    rest:
+      uris: http://139.9.113.201:9201, http://124.70.56.14:9201, http://117.78.3.21:9201
+      username: elastic
+      password: lxlz123456==
+      read-timeout: 3600s
+      connection-timeout: 3600s
+
+
+
+feign:
+  hystrix:
+    enabled: false
+  client:
+    config:
+      default:
+        #建立连接所用的时间，适用于网络状况正常的情况下，两端连接所需要的时间
+        ConnectTimeOut: 15000000
+        #指建立连接后从服务端读取到可用资源所用的时间
+        ReadTimeOut: 15000000
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://192.168.10.167:7002/eureka/
+  instance:
+    #instance-id: ${spring.application.name}:${server.port}
+    prefer-ip-address: true
+
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.faers.agent: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/faers-analysis.log
+    rollingPolicy:
+      file-name-pattern: logs/faers-analysis-%d{yyyy-MM-dd}.log
+      max-history: 10

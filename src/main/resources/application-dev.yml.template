@@ -1,0 +1,209 @@
+# ============================================================
+# Application Configuration Template
+# ============================================================
+# SECURITY WARNING: Never commit actual credentials to version control!
+# Copy this file to application-dev.yml and replace placeholders with actual values
+# or use environment variables.
+# ============================================================
+
+server:
+  port: 2037
+
+spring:
+  application:
+    name: agent-evimed
+  servlet:
+    multipart:
+      max-request-size: 100MB
+      max-file-size: 100MB
+
+  # Elasticsearch Configuration
+  # Use environment variables for security
+  elasticsearch:
+    uris: ${ES_URI:http://localhost:9200}
+    username: ${ES_USERNAME:elastic}
+    password: ${ES_PASSWORD:changeme}
+
+  # Spring AI DashScope Configuration
+  ai:
+    dashscope:
+      # CRITICAL: Use environment variable for API key
+      api-key: ${DASHSCOPE_API_KEY:your-api-key-here}
+      # Multiple API keys for failover (comma-separated)
+      api-keys: ${DASHSCOPE_API_KEYS:}
+      connect-timeout: 30000
+      read-timeout: 60000
+      write-timeout: 30000
+      max-retries: 3
+      chat:
+        options:
+          model: qwen3-235b-a22b-instruct-2507
+      connection-pool:
+        max-total: 200
+        max-per-route: 50
+        validate-after-inactivity: 5000
+      retry:
+        max-attempts: 4
+        initial-interval: 2000
+        multiplier: 1.5
+        max-interval: 15000
+      timeout:
+        connect: 30000
+        read: 60000
+        total: 120000
+        stream-stall: 30000
+      circuit-breaker:
+        failure-threshold: 10
+        wait-duration: 30000
+        sliding-window-size: 20
+      concurrency:
+        max-concurrent: 50
+        max-queue-size: 200
+        acquire-timeout: 120
+
+  # Cloud Configuration
+  cloud:
+    inetutils:
+      ignoredInterfaces:
+        - VMware.*
+      use-only-site-local-interfaces: true
+      preferred-networks: 192.168.0.*
+
+  # MongoDB Configuration
+  data:
+    mongodb:
+      evimed:
+        uri: ${MONGO_URI:mongodb://localhost:27017/evimed}
+      evimed-release:
+        uri: ${MONGO_RELEASE_URI:mongodb://localhost:27017/evimed}
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:1}
+      timeout: 100000
+      password: ${REDIS_PASSWORD:}
+      lettuce:
+        shutdown-timeout: 2000ms
+
+# LLM Configuration (New architecture)
+llm:
+  # API keys loaded from environment
+  api-keys:
+    - ${LLM_API_KEY_1:}
+    - ${LLM_API_KEY_2:}
+    - ${LLM_API_KEY_3:}
+  retry:
+    max-retries-per-key: 3
+    cooling-time-ms: 30000
+    retry-interval-ms: 3000
+    enable-exponential-backoff: true
+    backoff-multiplier: 1.5
+    max-backoff-ms: 30000
+  timeout:
+    total-ms: 120000
+    stall-ms: 30000
+    connect-ms: 30000
+    read-ms: 60000
+  model:
+    default-model: qwen3-235b-a22b-instruct-2507
+    temperature: 0.7
+    max-tokens: 8192
+    top-p: 0.9
+
+# Session Storage Configuration
+session:
+  storage:
+    mongo:
+      expire-time: 2592000
+      cleanup-cron: "0 0 * * * ?"
+      key-prefix:
+        session: "session:"
+        user-sessions: "user_sessions:"
+      scan-batch-size: 1000
+      enable-application-prefix: true
+
+# Kafka Configuration
+spring.kafka:
+  bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+  producer:
+    retries: 0
+    batch-size: 16384
+    buffer-memory: 33554432
+    acks: all
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  consumer:
+    auto-commit-interval: 1S
+    auto-offset-reset: latest
+    enable-auto-commit: true
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  listener:
+    concurrency: 5
+
+# Feign Configuration
+feign:
+  hystrix:
+    enabled: false
+  client:
+    config:
+      default:
+        ConnectTimeOut: 15000000
+        ReadTimeOut: 15000000
+
+# Eureka Configuration
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URL:http://localhost:7002/eureka/}
+  instance:
+    prefer-ip-address: true
+
+# WebSocket Configuration
+wesocket:
+  url: ${WEBSOCKET_URL:ws://localhost:8080/ws/ws}
+  api: ${WEBSOCKET_API:http://localhost:8080/ai-agent/token?clientType=}
+  max-frame-size: 10485760
+
+# Report Generation Configuration
+report:
+  directory: generated_reports/
+  chart-directory: generated_reports/charts/
+  template: academic-template.md
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.faers.agent: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/faers-analysis.log
+    rollingPolicy:
+      file-name-pattern: logs/faers-analysis-%d{yyyy-MM-dd}.log
+      max-history: 10
+
+# Aliyun OSS Configuration
+aliyun:
+  oss:
+    endpoint: ${OSS_ENDPOINT:oss-cn-beijing.aliyuncs.com}
+    access-key-id: ${OSS_ACCESS_KEY_ID:}
+    access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
+    bucket-name: ${OSS_BUCKET_NAME:}
+    file-host: drug-safety-analysis
+    file-url: ${OSS_FILE_URL:https://image.evimed.com/oss}
+
+# Zilliz Vector Database Configuration
+zilliz:
+  collectionName: lingxi_rag
+
+# Embedding Service Configuration
+embedding:
+  url: ${EMBEDDING_URL:http://localhost:8080/embedding?user_input=}
+
+# Search API Configuration
+search-api:
+  api-key: ${SEARCH_API_KEY:}
+  bo-cha:
+    key: ${BOCHA_API_KEY:}

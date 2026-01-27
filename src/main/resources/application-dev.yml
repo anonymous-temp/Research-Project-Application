@@ -1,0 +1,289 @@
+server:
+  port: 2037
+
+spring:
+  application:
+    name: agent-evimed
+  servlet:
+    multipart:
+      max-request-size: 100MB
+      max-file-size: 100MB
+
+  elasticsearch:
+    uris: http://es-cn-8t84ft4ee0003tib9.public.elasticsearch.aliyuncs.com:9200
+    username: elastic
+    password: Lxyl123456
+
+  ai:
+    dashscope:
+      api-key: sk-b658b36ac2c441bd8a2d615167cbcc4f  # 替换为真实的 API Key
+      # 多API Key配置（可选，用逗号分隔多个key，用于故障转移和负载均衡）
+      # api-keys: sk-key1,sk-key2,sk-key3  # 当主key失败时自动切换到备用key
+      api-keys: sk-b658b36ac2c441bd8a2d615167cbcc4f,sk-e562d28a63354f91803d18cbad60b7a4,sk-b11e5809027747a5aee24de3b392e1d9,sk-ffd2d0d74ba64e0d8e5258004dad3751
+      connect-timeout: 30000     # 连接超时：30秒（增加到30秒，提高稳定性）
+      read-timeout: 60000       # 读取超时：60秒（增加到60秒）
+      write-timeout: 30000       # 写入超时：30秒（增加到30秒）
+      max-retries: 3             # 最多重试3次
+      chat:
+        options:
+#          model: qwen3-max       # 模型名称（确保已开通权限）
+          model: qwen3-235b-a22b-instruct-2507       # 模型名称（确保已开通权限）
+      connection-pool:
+        max-total: 200           # 总连接数（从100增加到200，支持更高并发）
+        max-per-route: 50        # 每个路由最大连接数（从20增加到50）
+        validate-after-inactivity: 5000  # 空闲验证间隔（毫秒）
+      # LLM错误处理配置（优化高并发场景）
+      retry:
+        max-attempts: 4           # 最大重试次数（增加到4次，提高成功率）
+        initial-interval: 2000    # 初始重试延迟（增加到2秒，避免瞬时压力）
+        multiplier: 1.5           # 指数退避倍数（降低到1.5，避免等待时间过长）
+        max-interval: 15000       # 最大重试间隔（增加到15秒）
+      timeout:
+        connect: 30000            # 连接超时（增加到30秒）
+        read: 60000               # 读取超时（增加到60秒）
+        total: 120000             # 总超时（增加到120秒，支持复杂查询）
+        stream-stall: 30000       # 流式响应卡死检测阈值（增加到30秒）
+      circuit-breaker:
+        failure-threshold: 10     # 失败阈值（增加到10，更宽容）
+        wait-duration: 30000      # 熔断等待时间（降低到30秒，加快恢复）
+        sliding-window-size: 20   # 滑动窗口大小（增加到20，更准确的统计）
+      user-feedback:
+        thinking-delay: 5000      # 首次响应延迟提示阈值（增加到5秒）
+      # 并发控制配置（新增）
+      concurrency:
+        max-concurrent: 50        # 最大并发请求数
+        max-queue-size: 200       # 最大队列长度
+        acquire-timeout: 120      # 获取许可超时时间（秒）
+
+
+  cloud:
+    inetutils:
+      ignoredInterfaces:
+        - VMware.* # 忽略虚拟机网卡
+      use-only-site-local-interfaces: true
+      preferred-networks: 192.168.0.*
+
+  # MongoDB配置已禁用，使用内存存储
+  # data:
+  #   mongodb:
+  #     uri: mongodb://RWuser1:lxlz-masterRW@119.3.188.148:27017/evimed_new
+  #     socket-timeout: 6000
+  #     connection-timeout: 30000
+  #     max-wait-time: 12000
+
+  data:
+    mongodb:
+      evimed:
+        #uri: mongodb://RWuser1:lxlz-masterRW@119.3.188.148:27017/evimed_new
+        uri: mongodb://evimeddb:123456a@192.168.20.252:27017/evimed_test
+      evimed-release:
+        uri: mongodb://RWuser1:lxlz-masterRW@119.3.188.148:27017/evimed_new
+    redis:
+      #host: 121.36.90.131
+      host: 192.168.20.252
+      port: 6379
+      database: 1
+      timeout: 100000
+      password: ndyx@123
+      lettuce:
+        shutdown-timeout: 2000ms
+
+session:
+  storage:
+    mongo:
+      # 会话过期时间（秒）
+      expire-time: 2592000  # 30天 = 3600 * 24 * 30
+      # 清理过期会话的定时任务CRON表达式
+      cleanup-cron: "0 0 * * * ?"  # 每小时执行一次
+      # Redis键前缀配置
+      key-prefix:
+        session: "session:"
+        user-sessions: "user_sessions:"
+      # SCAN命令分批大小
+      scan-batch-size: 1000
+      # 优化后的键名格式，支持应用名称动态注入
+      enable-application-prefix: true
+
+#    redis:
+#      host: localhost
+#      port: 6379
+#      database: 2
+#      timeout: 100000
+#      lettuce:
+#        shutdown-timeout: 2000ms
+# 会话管理配置
+
+    #Rides集群
+#    redis:
+#      host: r-2zerq5mckple6w1963pd.redis.rds.aliyuncs.com
+#      port: 6379
+#      database: 2
+#      timeout: 100000
+#      password: Lxyl123456
+#      lettuce:
+#        shutdown-timeout: 2000ms
+#    #Rides单体
+#    redis:
+#      #host: 121.36.90.131
+#      host: 192.168.20.252
+#      port: 6379
+#      database: 1
+#      timeout: 10000
+#      password: ndyx@123
+#      lettuce:
+#        shutdown-timeout: 2000ms
+
+
+  kafka:
+    #集群
+    bootstrap-servers: 192.168.20.253:9092
+    producer:
+      # 发生错误后，消息重发的次数。
+      retries: 0
+      # 当有多个消息需要被发送到同一个分区时，生产者会把它们放在同一个批次里。
+      # 该参数指定了一个批次可以使用的内存大小，按照字节数计算。
+      batch-size: 16384
+      # 设置生产者内存缓冲区的大小。
+      buffer-memory: 33554432
+      # procedure要求leader在考虑完成请求之前收到的确认数，用于控制发送记录在服务端的持久化，其值可以为如下：
+      # acks = 0 如果设置为零，则生产者将不会等待来自服务器的任何确认，该记录将立即添加到套接字缓冲区并视为已发送。在这种情况下，无法保证服务器已收到记录，并且重试配置将不会生效（因为客户端通常不会知道任何故障），为每条记录返回的偏移量始终设置为-1。
+      # acks = 1 这意味着leader会将记录写入其本地日志，但无需等待所有副本服务器的完全确认即可做出回应，在这种情况下，如果leader在确认记录后立即失败，但在将数据复制到所有的副本服务器之前，则记录将会丢失。
+      # acks = all 这意味着leader将等待完整的同步副本集以确认记录，这保证了只要至少一个同步副本服务器仍然存活，记录就不会丢失，这是最强有力的保证，这相当于acks = -1的设置。
+      acks: all
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # 值的序列化方式
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      # 自动提交的时间间隔,默认5秒
+
+      auto-commit-interval: 1S
+      # 该属性指定了消费者在读取一个没有偏移量的分区或者偏移量无效的情况下该作何处理：
+      # latest（默认值）在偏移量无效的情况下，消费者将从最新的记录开始读取数据（在消费者启动之后生成的记录）
+      # earliest ：在偏移量无效的情况下，消费者将从起始位置读取分区的记录
+      auto-offset-reset: latest
+      # 是否自动提交偏移量，默认值是true,为了避免出现重复数据和数据丢失，可以把它设置为false,然后手动提交偏移量
+      #enable-auto-commit: false
+      enable-auto-commit: true
+      # 键的反序列化方式
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # 值的反序列化方式
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    listener:
+      # 在侦听器容器中运行的线程数。
+      concurrency: 5
+      #listner负责ack，每调用一次，就立即commit
+      #ack-mode: manual_immediate
+
+feign:
+  hystrix:
+    enabled: false
+  client:
+    config:
+      default:
+        #建立连接所用的时间，适用于网络状况正常的情况下，两端连接所需要的时间
+        ConnectTimeOut: 15000000
+        #指建立连接后从服务端读取到可用资源所用的时间
+        ReadTimeOut: 15000000
+
+#eureka:
+#  client:
+#    serviceUrl:
+#      defaultZone: http://192.168.20.253:7002/eureka/
+#    enabled: false
+#  instance:
+#    instance-id: ${spring.application.name}:${server.port}
+#    prefer-ip-address: true
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://192.168.20.253:7002/eureka/
+  instance:
+    #instance-id: ${spring.application.name}:${server.port}
+    prefer-ip-address: true
+
+
+# 原有外部WebSocket配置（已注释，改用本地服务端）
+wesocket:
+#  url: ws://192.168.20.252:2066/ws/ws
+  url: ws://192.168.20.252:2066/ws/ws
+  api: http://192.168.20.254:2121/ai-agent/token?clientType=
+  max-frame-size: 10485760
+
+# 本地WebSocket服务端配置
+#websocket:
+#  server:
+#    port: 8080  # 本地WebSocket服务端端口
+#    path: /ws/ws  # WebSocket路径
+#    timeout: 60  # 连接超时时间（秒），1分钟
+#  # 客户端配置（连接到本地服务端）
+#  client:
+#    url: ws://127.0.0.1:8080/ws/ws  # 本地WebSocket服务端地址
+#    api: http://127.0.0.1:8080/ai-agent/token?clientType=  # 本地认证API（可选）
+
+
+report:
+  directory: generated_reports/
+  chart-directory: generated_reports/charts/
+  template: academic-template.md
+
+
+# 日志配置
+#logging:
+#  level:
+#    root: INFO
+#    com.faers.agent: DEBUG
+#  pattern:
+#    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+#  file:
+#    name: logs/faers-analysis.log
+#    rollingPolicy:
+#      file-name-pattern: logs/faers-analysis-%d{yyyy-MM-dd}.log
+#      max-history: 10
+
+logging:
+  level:
+    root: INFO  # 将根日志级别改为DEBUG，以显示所有级别的日志
+    com.faers.agent: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/faers-analysis.log
+    rollingPolicy:
+      file-name-pattern: logs/faers-analysis-%d{yyyy-MM-dd}.log
+      max-history: 10
+
+# Aliyun OSS Configuration
+# SECURITY: Use environment variables for credentials
+aliyun:
+  oss:
+    endpoint: ${OSS_ENDPOINT:oss-cn-beijing.aliyuncs.com}
+    access-key-id: ${OSS_ACCESS_KEY_ID:your-access-key-id}
+    access-key-secret: ${OSS_ACCESS_KEY_SECRET:your-access-key-secret}
+    bucket-name: ${OSS_BUCKET_NAME:your-bucket-name}
+    file-host: drug-safety-analysis
+    file-url: ${OSS_FILE_URL:https://image.evimed.com/oss}
+
+#zilliz相关配置（向量模型库）
+zilliz:
+  collectionName: lingxi_rag
+
+#向量模型
+embedding:
+  #url: 117.78.3.21:9079/embedding?user_input=
+  #url: region-45.autodl.pro:23627/embedding?user_input=
+  url: https://u48781-9ff2-f98c8248.nmb2.seetacloud.com:8443/embedding?user_input=
+
+
+# searchAPI
+#search-api:
+#  # 需要替换为你自己的 key
+#  api-key: EwR3t4k9DFwfxNoLGuQW4E2q
+#  bo-cha:
+#    key: sk-978e893144d84bc0937f1ed14c93fc13
+
+# searchAPI
+search-api:
+  api-key: EwR3t4k9DFwfxNoLGuQW4E2q
+  bo-cha:
+    key: sk-b6d5a986dd2348dcac093b5f52ed2c67
